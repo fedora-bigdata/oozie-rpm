@@ -317,3 +317,5 @@ install -m 0644 %{SOURCE8} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 %doc LICENSE.txt NOTICE.txt 
 
 %changelog
+* Fri Feb 28 2014 Robert Rati <rrati@redhat> - 4.0.0-1
+- Initial packaging
