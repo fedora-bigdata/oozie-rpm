@@ -1,0 +1,8 @@
+/var/log/oozie/*.log
+{
+    missingok
+    copytruncate
+    compress
+    weekly
+    rotate 52
+}

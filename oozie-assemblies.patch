@@ -1,0 +1,16 @@
+diff --git a/src/main/assemblies/distro.xml b/src/main/assemblies/distro.xml
+index 6143e91..b548b90 100644
+--- a/src/main/assemblies/distro.xml
++++ b/src/main/assemblies/distro.xml
+@@ -122,11 +122,6 @@
+             <source>${basedir}/../core/target/oozie-core-${project.version}.jar</source>
+             <outputDirectory>/oozie-core</outputDirectory>
+         </file>
+-        <!-- Oozie core test jar -->
+-        <file>
+-            <source>${basedir}/../core/target/oozie-core-${project.version}-tests.jar</source>
+-            <outputDirectory>/oozie-core</outputDirectory>
+-        </file>
+         <!-- Oozie war -->
+         <file>
+             <source>${basedir}/../webapp/target/oozie-webapp-${project.version}.war</source>
