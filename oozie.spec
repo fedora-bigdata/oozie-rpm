@@ -1,11 +1,15 @@
-%global hadoop_version 2.2.0-SNAPSHOT
+%global hadoop_version 2.2.0
 %global pig_version 0.12.0
+%global java_version 1.8
+%global target_java_version 1.7
 
-%global commit ae47150f00832a40a79680bb189bb9b5a9ed7423
+%global commit fe8d85a4f0467f3ad7e8d7fc8ab4ebd89fa5fe3f
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
+%bcond_with javadoc
+
 Name: oozie
-Version: 4.0.0
+Version: 4.0.1
 Release: 1%{?dist}
 Summary: A work-flow scheduling system for Apache Hadoop
 License: ASL 2.0
@@ -22,11 +26,12 @@ Source8: %{name}.logrotate
 Patch0: %{name}-jetty8.patch
 Patch1: %{name}-no-download-tomcat.patch
 Patch2: %{name}-assemblies.patch
+Patch3: %{name}-commons-collections4.patch
 ExcludeArch: %{arm}
 BuildArch: noarch
 
+BuildRequires: apache-commons-collections4
 BuildRequires: apache-log4j-extras
-BuildRequires: collections-generic
 BuildRequires: ehcache-core
 BuildRequires: hadoop-client
 BuildRequires: hadoop-common
@@ -49,6 +54,7 @@ BuildRequires: openjpa-tools
 BuildRequires: pig
 BuildRequires: postgresql-jdbc
 BuildRequires: tomcat
+BuildRequires: tomcat-log4j
 
 Requires: java-headless
 Requires: tomcat
@@ -58,17 +64,20 @@ Apache Oozie is an extensible, scalable and reliable system to define,
 manage, schedule, and execute complex Apache Hadoop workloads via
 web services
 
+%if %{with javadoc}
 %package javadoc
 Summary: Javadoc for %{name}
 
 %description javadoc
 This package contains the API documentation for %{name}.
+%endif
 
 %prep
 %setup -qn %{name}-%{commit}
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 # Disable sqoop module because sqoop is missing
 %pom_disable_module sqoop sharelib
@@ -77,6 +86,12 @@ This package contains the API documentation for %{name}.
 # Remove xerces dep.  It's not needed and causes compilation issues
 %pom_remove_dep xerces:xercesImpl
 %pom_remove_dep xerces:xercesImpl client
+
+# Remove the maven-findbugs plugin
+%pom_remove_plugin :findbugs-maven-plugin
+
+# Remove the maven-clover2-plugin plugin
+%pom_remove_plugin :maven-clover2-plugin
 
 # Disable or remove the maven-assembly-plugin in poms that access an empty
 # assembly configuration file
@@ -146,6 +161,7 @@ sed -i "s/json.JSONObject/json.simple.JSONObject/" core/src/main/java/org/apache
 %pom_disable_module hcatalog-0.6 hcataloglibs
 %pom_xpath_set "pom:project/pom:dependencies/pom:dependency[pom:artifactId='hcatalog-server-extensions']/pom:groupId" "org.apache.hive.hcatalog" hcataloglibs/hcatalog-0.5
 %pom_xpath_set "pom:project/pom:dependencies/pom:dependency[pom:artifactId='hcatalog-core']/pom:groupId" "org.apache.hive.hcatalog" hcataloglibs/hcatalog-0.5
+%pom_xpath_set "pom:project/pom:dependencies/pom:dependency[pom:artifactId='hcatalog-pig-adapter']/pom:groupId" "org.apache.hive.hcatalog" hcataloglibs/hcatalog-0.5
 %pom_xpath_set "pom:project/pom:dependencies/pom:dependency[pom:artifactId='webhcat-java-client']/pom:groupId" "org.apache.hive.hcatalog" hcataloglibs/hcatalog-0.5
 %pom_xpath_set "pom:project/pom:dependencies/pom:dependency[pom:artifactId='%{name}-hcatalog']/pom:exclusions/pom:exclusion[pom:artifactId='hcatalog-server-extensions']/pom:groupId" "org.apache.hive.hcatalog" sharelib/hcatalog
 
@@ -162,7 +178,10 @@ sed -i "s/json.JSONObject/json.simple.JSONObject/" core/src/main/java/org/apache
 %mvn_package :%{name}*-test __noinstall
 
 %build
-%mvn_build -- -DjavaVersion=1.7 -DtargetJavaVersion=1.7 -Phadoop-2 -DskipTests -Dmaven.test.skip=true -Dpig.version=%{pig_version} -Dpig.classifier="" package assembly:single
+%if %{without javadoc}
+args="-j"
+%endif
+%mvn_build $args -- -DjavaVersion=%{java_version} -DtargetJavaVersion=%{target_java_version} -Phadoop-2 -DskipTests -Dmaven.test.skip=true -Dpig.version=%{pig_version} -Dpig.classifier="" package assembly:single
 
 %install
 # Replace oozie jars with symlinks
@@ -313,8 +332,10 @@ install -m 0644 %{SOURCE8} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 %attr(0775,root,tomcat) %dir %{_var}/cache/%{name}/temp
 %attr(0775,root,tomcat) %dir %{_var}/cache/%{name}/work
 
+%if %{with javadoc}
 %files -f .mfiles-javadoc javadoc
 %doc LICENSE.txt NOTICE.txt 
+%endif
 
 %changelog
 * Fri Feb 28 2014 Robert Rati <rrati@redhat> - 4.0.0-1

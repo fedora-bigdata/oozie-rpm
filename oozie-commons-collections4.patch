@@ -1,0 +1,52 @@
+diff --git a/core/pom.xml b/core/pom.xml
+index 1014b26..ee0eddc 100644
+--- a/core/pom.xml
++++ b/core/pom.xml
+@@ -294,8 +294,8 @@
+             <scope>compile</scope>
+         </dependency>
+         <dependency>
+-            <groupId>net.sourceforge.collections</groupId>
+-            <artifactId>collections-generic</artifactId>
++            <groupId>org.apache.commons</groupId>
++            <artifactId>commons-collections4</artifactId>
+             <scope>compile</scope>
+         </dependency>
+     </dependencies>
+diff --git a/core/src/main/java/org/apache/oozie/util/GraphGenerator.java b/core/src/main/java/org/apache/oozie/util/GraphGenerator.java
+index 9830144..eac50a0 100644
+--- a/core/src/main/java/org/apache/oozie/util/GraphGenerator.java
++++ b/core/src/main/java/org/apache/oozie/util/GraphGenerator.java
+@@ -36,7 +36,7 @@ import java.util.Map;
+ import javax.imageio.ImageIO;
+ import javax.xml.parsers.SAXParser;
+ import javax.xml.parsers.SAXParserFactory;
+-import org.apache.commons.collections15.Transformer;
++import org.apache.commons.collections4.Transformer;
+ import org.apache.oozie.client.WorkflowAction;
+ import org.apache.oozie.client.WorkflowAction.Status;
+ import org.apache.oozie.client.WorkflowJob;
+@@ -728,4 +728,4 @@ public class GraphGenerator {
+             }
+         }
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/pom.xml b/pom.xml
+index 3b0e23a..879592f 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -744,9 +744,9 @@
+             </dependency>
+ 
+             <dependency>
+-                <groupId>net.sourceforge.collections</groupId>
+-                <artifactId>collections-generic</artifactId>
+-                <version>4.01</version>
++                <groupId>org.apache.commons</groupId>
++                <artifactId>commons-collections4</artifactId>
++                <version>4.0</version>
+             </dependency>
+ 
+         </dependencies>
