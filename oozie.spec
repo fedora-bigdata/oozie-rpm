@@ -117,6 +117,9 @@ done
 %pom_xpath_set "pom:project/pom:dependencies/pom:dependency[pom:artifactId='hsqldb']/pom:groupId" "org.hsqldb" core
 %pom_xpath_set "pom:project/pom:dependencies/pom:dependency[pom:artifactId='hsqldb']/pom:groupId" "org.hsqldb" examples
 
+# Fix log4j version
+%pom_xpath_set "pom:project/pom:dependencyManagement/pom:dependencies/pom:dependency[pom:artifactId='log4j']/pom:version" "1.2.17"
+
 # Remove test build dependencies because of missing test dependency greenmail
 %pom_remove_dep com.icegreen:greenmail core
 
