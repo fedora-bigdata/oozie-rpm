@@ -349,5 +349,8 @@ install -m 0644 %{SOURCE8} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 %endif
 
 %changelog
+* Thu Jun 26 2014 Robert Rati <rrati@redhat> - 4.0.1-1
+- Updated to upstream 4.0.1
+
 * Fri Feb 28 2014 Robert Rati <rrati@redhat> - 4.0.0-1
 - Initial packaging
