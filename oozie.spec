@@ -27,11 +27,15 @@ Patch0: %{name}-jetty8.patch
 Patch1: %{name}-no-download-tomcat.patch
 Patch2: %{name}-assemblies.patch
 Patch3: %{name}-commons-collections4.patch
+# Modified version of patch to apply for this oozie version
+# https://issues.apache.org/jira/browse/OOZIE-1440
+Patch4: %{name}-xerces.patch
 ExcludeArch: %{arm}
 BuildArch: noarch
 
 BuildRequires: apache-commons-collections4
 BuildRequires: apache-log4j-extras
+BuildRequires: antlr3-java
 BuildRequires: ehcache-core
 BuildRequires: hadoop-client
 BuildRequires: hadoop-common
@@ -78,14 +82,11 @@ This package contains the API documentation for %{name}.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 # Disable sqoop module because sqoop is missing
 %pom_disable_module sqoop sharelib
 %pom_remove_dep org.apache.%{name}:%{name}-sharelib-sqoop webapp
-
-# Remove xerces dep.  It's not needed and causes compilation issues
-%pom_remove_dep xerces:xercesImpl
-%pom_remove_dep xerces:xercesImpl client
 
 # Remove the maven-findbugs plugin
 %pom_remove_plugin :findbugs-maven-plugin
@@ -138,7 +139,7 @@ done
 
 # Remove this openjpa dependency.  It's not needed and is invalid with
 # current version of openjpa
-%pom_xpath_remove "pom:project/pom:build/pom:plugins/pom:plugin[pom:artifactId='openjpa-maven-plugin']/pom:dependencies" core
+%pom_xpath_remove "pom:project/pom:build/pom:plugins/pom:plugin[pom:artifactId='openjpa-maven-plugin']/pom:dependencies/pom:dependency[pom:artifactId='openjpa']" core
 
 # Change the json import to use json-simple
 sed -i "s/json.JSONObject/json.simple.JSONObject/" core/src/main/java/org/apache/%{name}/util/ELConstantsFunctions.java
@@ -176,9 +177,15 @@ sed -i "s/json.JSONObject/json.simple.JSONObject/" core/src/main/java/org/apache
 %pom_xpath_remove "pom:project/pom:dependencyManagement/pom:dependencies/pom:dependency[pom:artifactId='%{name}-webapp' and pom:type='war']"
 %pom_xpath_remove "pom:project/pom:dependencies/pom:dependency[pom:artifactId='%{name}-webapp' and pom:type='war']" distro
 
+# Remove the deps on docs war
+%pom_xpath_remove "pom:project/pom:dependencyManagement/pom:dependencies/pom:dependency[pom:artifactId='%{name}-docs' and pom:type='war']" 
+%pom_remove_dep :oozie-docs webapp
+
 # Files we don't want
 %mvn_package :%{name}-docs __noinstall
 %mvn_package :%{name}*-test __noinstall
+%mvn_package :%{name}*:war: __noinstall
+%mvn_package :%{name}*:tar.gz: __noinstall
 
 %build
 %if %{without javadoc}
@@ -315,6 +322,7 @@ install -m 0644 %{SOURCE8} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 %files -f .mfiles
 %doc LICENSE.txt NOTICE.txt README.txt
 %dir %{_javadir}/%{name}
+%dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/adminusers.txt
 %config(noreplace) %{_sysconfdir}/%{name}/oozie-site.xml
 %config(noreplace) %{_sysconfdir}/%{name}/oozie-log4j.properties
